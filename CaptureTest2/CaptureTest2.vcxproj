@@ -87,8 +87,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>D:\!research\opencv\build\include\opencv2;D:\!research\SDK\x64\include;D:\!research\opencv\build\include;D:\!research\opencv\build\include\opencv;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\!research\SDK\x64\lib;D:\!research\opencv\build\x64\vc15\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\SDK\MVC1000MF\x64\include;C:\SDK\opencv\build\include;C:\SDK\opencv\build\include\opencv;C:\SDK\opencv\build\include\opencv2;D:\!research\opencv\build\include\opencv2;D:\!research\SDK\x64\include;D:\!research\opencv\build\include;D:\!research\opencv\build\include\opencv;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\SDK\MVC1000MF\x64\lib;C:\SDK\opencv\build\x64\vc15\lib;D:\!research\SDK\x64\lib;D:\!research\opencv\build\x64\vc15\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
