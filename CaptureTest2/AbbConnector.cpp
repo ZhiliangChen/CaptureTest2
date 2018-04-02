@@ -69,7 +69,7 @@ void AbbConnector::MoveToolTo(ABBPOS abbp)
 	//double vel = 50;
 	CString abbmes;	
 	CString temp;
-	//char recvbuf[80];
+	char recvbuf[80];
 
 	//欧拉角转换为四元数
 	double x, y, z;
@@ -158,17 +158,17 @@ void AbbConnector::MoveToolTo(ABBPOS abbp)
 	cabbmes[len] = '\0';
 	SendMsg(cabbmes);
 
-	/*Sleep(500);
+	Sleep(500);
 
 	char* ptr;
 	while ((ptr = strstr(recvbuf, "finish")) == NULL)
 	{
-		Sleep(100);
+		Sleep(500);
 		recv(ClientSocket, recvbuf, 100, 0);
 	}
-	delete[] ptr;*/
+	delete[] ptr;
 	delete[] cabbmes;
-	//delete[] recvbuf;
+	delete[] recvbuf;
 	
 
 }
