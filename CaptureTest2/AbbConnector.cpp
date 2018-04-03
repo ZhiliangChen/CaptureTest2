@@ -157,18 +157,18 @@ void AbbConnector::MoveToolTo(ABBPOS abbp)
 	WideCharToMultiByte(CP_ACP, 0, abbmes, -1, cabbmes, len, NULL, FALSE);
 	cabbmes[len] = '\0';
 	SendMsg(cabbmes);
+	//这一部分为什么会导致程序卡死？
+	//Sleep(500);
 
-	Sleep(500);
-
-	char* ptr;
-	while ((ptr = strstr(recvbuf, "finish")) == NULL)
-	{
-		Sleep(500);
-		recv(ClientSocket, recvbuf, 100, 0);
-	}
-	delete[] ptr;
+	//char* ptr;
+	//while ((ptr = strstr(recvbuf, "finish")) == NULL)
+	//{
+	//	Sleep(500);
+	//	recv(ClientSocket, recvbuf, 100, 0);
+	//}
+	//delete[] ptr;
+	//delete[] recvbuf;
 	delete[] cabbmes;
-	delete[] recvbuf;
 	
 
 }

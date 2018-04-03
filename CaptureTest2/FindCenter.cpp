@@ -20,8 +20,9 @@ void CvFindCenter::FindCenter()
 		float* p = (float*)cvGetSeqElem(circles, i);
 		cvCircle(img, cvPoint(cvRound(p[0]), cvRound(p[1])), 3, CV_RGB(0, 255, 0), -1, 8, 0);
 		cvCircle(img, cvPoint(cvRound(p[0]), cvRound(p[1])), cvRound(p[2]), CV_RGB(255, 0, 0), 3, 8, 0);
-		x_center = cvRound(p[0]);
-		y_center = cvRound(p[1]);
+		//如何输出小数位？？？
+		x_center = p[0];
+		y_center = p[1];
 	}
 	//cout << "圆数量=" << circles->total << endl;
 	cvNamedWindow("circles", 1);

@@ -10,8 +10,8 @@ public:
 	IplImage* gray;
 	CvMemStorage* storage;
 	CvSeq* circles;
-	int x_center;
-	int y_center;
+	double x_center;
+	double y_center;
 
 
 };
