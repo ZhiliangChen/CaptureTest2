@@ -17,219 +17,9 @@
 #include "InterfaceLLT_2.h"
 #include "GetProfiles_Ethernet.h"
 
-using namespace std;
+CInterfaceLLT InterfaceLLT;
 
-static CInterfaceLLT* m_pLLT = NULL;
-static unsigned int m_uiResolution = 0;
-static TScannerType m_tscanCONTROLType = scanCONTROL2xxx;
-
-
-
-  std::vector<unsigned int> vuiEthernetInterfaces(MAX_INTERFACE_COUNT);
-  std::vector<DWORD> vdwResolutions(MAX_RESOULUTIONS);
-  unsigned int uiEthernetInterfaceCount = 0;
-  unsigned int uiShutterTime = 100;
-  unsigned int uiIdleTime = 900;
-  bool bLoadError;
-  int iRetValue;
-  bool bOK = true;
-  bool bConnected = false;
-
-  // Creating a LLT-object
-  // The LLT-Object will load the LLT.dll automaticly and give us a error if ther no LLT.dll
-  m_pLLT = new CInterfaceLLT("LLT.dll", &bLoadError);
-
-  if(bLoadError)
-  {
-    cout << "Error loading LLT.dll \n";
-
-    // Wait for a keyboard hit
-    while(!_kbhit())
-    {
-    }
-
-    // Deletes the LLT-object
-    delete m_pLLT;
-    return -1;
-  }
-
-  // Test if the LLT.dll supports GetLLTType (Version 3.0.0.0 or higher)
-  if(m_pLLT->m_pFunctions->CreateLLTDevice == NULL)
-  {
-    cout << "Please use a LLT.dll version 3.0.0.0 or higher! \n";
-  }
-  else
-  {
-    // Create a Firewire Device
-    if(m_pLLT->CreateLLTDevice(INTF_TYPE_ETHERNET))
-      cout << "CreateLLTDevice Ethernet OK \n";
-    else
-      cout << "Error during CreateLLTDevice\n";
-
-    // Gets the available interfaces from the scanCONTROL-device
-    iRetValue = m_pLLT->GetDeviceInterfacesFast(&vuiEthernetInterfaces[0], (unsigned int)vuiEthernetInterfaces.size());
-
-    if(iRetValue == ERROR_GETDEVINTERFACES_REQUEST_COUNT)
-    {
-      cout << "There are more or equal than " << vuiEthernetInterfaces.size() << " scanCONTROL connected \n";
-      uiEthernetInterfaceCount = vuiEthernetInterfaces.size();
-    }
-    else if(iRetValue < 0)
-    {
-      cout << "A error occured during searching for connected scanCONTROL \n";
-      uiEthernetInterfaceCount = 0;
-    }
-    else
-    {
-      uiEthernetInterfaceCount = iRetValue;
-    }
-
-    if(uiEthernetInterfaceCount == 0)
-      cout << "There is no scanCONTROL connected \n";
-    else if(uiEthernetInterfaceCount == 1)
-      cout << "There is 1 scanCONTROL connected \n";
-    else
-      cout << "There are " << uiEthernetInterfaceCount << " scanCONTROL's connected \n";
-
-    if(uiEthernetInterfaceCount >= 1)
-    {
-      cout << "\nSelect the device interface " << vuiEthernetInterfaces[0] << "\n";
-      if((iRetValue = m_pLLT->SetDeviceInterface(vuiEthernetInterfaces[0], 0)) < GENERAL_FUNCTION_OK)
-      {
-        OnError("Error during SetDeviceInterface", iRetValue);
-        bOK = false;
-      }
-
-      if(bOK)
-      {
-        cout << "Connecting to scanCONTROL\n";
-        if((iRetValue = m_pLLT->Connect()) < GENERAL_FUNCTION_OK)
-        {
-          OnError("Error during Connect", iRetValue);
-          bOK = false;
-        }
-        else
-          bConnected = true;
-      }
-
-      if(bOK)
-      {
-        cout << "Get scanCONTROL type\n";
-        if((iRetValue = m_pLLT->GetLLTType(&m_tscanCONTROLType)) < GENERAL_FUNCTION_OK)
-        {
-          OnError("Error during GetLLTType", iRetValue);
-          bOK = false;
-        }
-
-        if(iRetValue == GENERAL_FUNCTION_DEVICE_NAME_NOT_SUPPORTED)
-        {
-          cout << "Can't decode scanCONTROL type. Please contact Micro-Epsilon for a newer version of the LLT.dll.\n";
-        }
-
-        if(m_tscanCONTROLType >= scanCONTROL27xx_25 && m_tscanCONTROLType <= scanCONTROL27xx_xxx)
-        {
-          cout << "The scanCONTROL is a scanCONTROL27xx\n\n";
-        }
-        else if(m_tscanCONTROLType >= scanCONTROL26xx_25 && m_tscanCONTROLType <= scanCONTROL26xx_xxx)
-        {
-          cout << "The scanCONTROL is a scanCONTROL26xx\n\n";
-        }
-        else if(m_tscanCONTROLType >= scanCONTROL29xx_25 && m_tscanCONTROLType <= scanCONTROL29xx_xxx)
-        {
-          cout << "The scanCONTROL is a scanCONTROL29xx\n\n";
-        }
-        else
-        {
-          cout << "The scanCONTROL is a undefined type\nPlease contact Micro-Epsilon for a newer SDK\n\n";
-        }
-
-        cout << "Get all possible resolutions\n";
-        if((iRetValue = m_pLLT->GetResolutions(&vdwResolutions[0], vdwResolutions.size())) < GENERAL_FUNCTION_OK)
-        {
-          OnError("Error during GetResolutions", iRetValue);
-          bOK = false;
-        }
-
-        m_uiResolution = vdwResolutions[0];
-      }
-
-      if(bOK)
-      {
-        cout << "Set resolution to " << m_uiResolution << "\n";
-        if((iRetValue = m_pLLT->SetResolution(m_uiResolution)) < GENERAL_FUNCTION_OK)
-        {
-          OnError("Error during SetResolution", iRetValue);
-          bOK = false;
-        }
-      }
-
-      if(bOK)
-      {
-        cout << "Set trigger to internal\n";
-        if((iRetValue = m_pLLT->SetFeature(FEATURE_FUNCTION_TRIGGER, 0x00000000)) < GENERAL_FUNCTION_OK)
-        {
-          OnError("Error during SetFeature(FEATURE_FUNCTION_TRIGGER)", iRetValue);
-          bOK = false;
-        }
-      }
-
-      if(bOK)
-      {
-        cout << "Profile config set to PROFILE\n";
-        if((iRetValue = m_pLLT->SetProfileConfig(PROFILE)) < GENERAL_FUNCTION_OK)
-        {
-          OnError("Error during SetProfileConfig", iRetValue);
-          bOK = false;
-        }
-      }
-
-      if(bOK)
-      {
-        cout << "Set shutter time to " << uiShutterTime << "\n";
-        if((iRetValue = m_pLLT->SetFeature(FEATURE_FUNCTION_SHUTTERTIME, uiShutterTime)) < GENERAL_FUNCTION_OK)
-        {
-          OnError("Error during SetFeature(FEATURE_FUNCTION_SHUTTERTIME)", iRetValue);
-          bOK = false;
-        }
-      }
-
-      if(bOK)
-      {
-        cout << "Set idle time to " << uiIdleTime << "\n";
-        if((iRetValue = m_pLLT->SetFeature(FEATURE_FUNCTION_IDLETIME, uiIdleTime)) < GENERAL_FUNCTION_OK)
-        {
-          OnError("Error during SetFeature(FEATURE_FUNCTION_IDLETIME)", iRetValue);
-          bOK = false;
-        }
-      }
-
-      if(bOK)
-      {
-        GetProfiles_Ethernet();
-      }
-
-      if(bConnected)
-      {
-        cout << "Disconnect the scanCONTROL\n";
-        if((iRetValue = m_pLLT->Disconnect()) < GENERAL_FUNCTION_OK)
-        {
-          OnError("Error during Disconnect", iRetValue);
-        }
-      }
-    }
-  }
-
-  // Deletes the LLT-object
-  delete m_pLLT;
-
-  // Wait for a keyboard hit
-  while(!_kbhit())
-  {
-  }
-
-
-
-void GetProfiles_Ethernet()
+void GetProGetProfiles_Ethernet::GetProfiles_Ethernet()
 {
   int iRetValue;
   std::vector<double> vdValueX(m_uiResolution);
@@ -242,7 +32,7 @@ void GetProfiles_Ethernet()
   cout << "Gets the type of the scanCONTROL (measurement range)\n";
 
   cout << "Enable the measurement\n";
-  if((iRetValue = m_pLLT->TransferProfiles(NORMAL_TRANSFER, true)) < GENERAL_FUNCTION_OK)
+  if((iRetValue = InterfaceLLT.TransferProfiles(NORMAL_TRANSFER, true)) < GENERAL_FUNCTION_OK)
   {
     OnError("Error during TransferProfiles", iRetValue);
     return;
@@ -252,7 +42,7 @@ void GetProfiles_Ethernet()
   Sleep(100);
 
   // Gets 1 profile in "polling-mode" and PURE_PROFILE configuration
-  if((iRetValue = m_pLLT->GetActualProfile(&vucProfileBuffer[0], (unsigned int)vucProfileBuffer.size(), PURE_PROFILE, NULL)) !=
+  if((iRetValue = InterfaceLLT.GetActualProfile(&vucProfileBuffer[0], (unsigned int)vucProfileBuffer.size(), PURE_PROFILE, NULL)) !=
      vucProfileBuffer.size())
   {
     OnError("Error during GetActualProfile", iRetValue);
@@ -261,7 +51,7 @@ void GetProfiles_Ethernet()
   cout << "Get profile in polling-mode and PURE_PROFILE configuration OK \n";
 
   cout << "Converting of profile data from the first reflection\n";
-  iRetValue = m_pLLT->ConvertProfile2Values(&vucProfileBuffer[0], m_uiResolution, PURE_PROFILE, m_tscanCONTROLType, 0, true, NULL,
+  iRetValue = InterfaceLLT.ConvertProfile2Values(&vucProfileBuffer[0], m_uiResolution, PURE_PROFILE, m_tscanCONTROLType, 0, true, NULL,
                                             NULL, NULL, &vdValueX[0], &vdValueZ[0], NULL, NULL);
   if(((iRetValue & CONVERT_X) == 0) || ((iRetValue & CONVERT_Z) == 0))
   {
@@ -275,7 +65,7 @@ void GetProfiles_Ethernet()
   DisplayTimestamp(&vucProfileBuffer[m_uiResolution * 4]);
 
   cout << "Disable the measurement\n";
-  if((iRetValue = m_pLLT->TransferProfiles(NORMAL_TRANSFER, false)) < GENERAL_FUNCTION_OK)
+  if((iRetValue = InterfaceLLT.TransferProfiles(NORMAL_TRANSFER, false)) < GENERAL_FUNCTION_OK)
   {
     OnError("Error during TransferProfiles", iRetValue);
     return;
@@ -283,17 +73,17 @@ void GetProfiles_Ethernet()
 }
 
 // Displaying the error text
-void OnError(const char* szErrorTxt, int iErrorValue)
+void GetProGetProfiles_Ethernet::OnError(const char* szErrorTxt, int iErrorValue)
 {
   char acErrorString[200];
 
   cout << szErrorTxt << "\n";
-  if(m_pLLT->TranslateErrorValue(iErrorValue, acErrorString, sizeof(acErrorString)) >= GENERAL_FUNCTION_OK)
+  if(InterfaceLLT.TranslateErrorValue(iErrorValue, acErrorString, sizeof(acErrorString)) >= GENERAL_FUNCTION_OK)
     cout << acErrorString << "\n\n";
 }
 
 // Displays one profile
-void DisplayProfile(double* pdValueX, double* pdValueZ, unsigned int uiResolution)
+void GetProGetProfiles_Ethernet::DisplayProfile(double* pdValueX, double* pdValueZ, unsigned int uiResolution)
 {
   size_t tNumberSize;
   int testnum = 0;
@@ -372,13 +162,13 @@ void DisplayProfile(double* pdValueX, double* pdValueZ, unsigned int uiResolutio
 }
 
 // Displays the timestamp
-void DisplayTimestamp(unsigned char* pucTimestamp)
+void GetProGetProfiles_Ethernet::DisplayTimestamp(unsigned char* pucTimestamp)
 {
   double dShutterOpen, dShutterClose;
   unsigned int uiProfileCount;
 
   // Decode the timestamp
-  m_pLLT->Timestamp2TimeAndCount(pucTimestamp, &dShutterOpen, &dShutterClose, &uiProfileCount);
+  InterfaceLLT.Timestamp2TimeAndCount(pucTimestamp, &dShutterOpen, &dShutterClose, &uiProfileCount);
   cout << "\nShutterOpen: " << dShutterOpen << " ShutterClose: " << dShutterClose << "\n";
   cout << "ProfileCount: " << uiProfileCount << "\n";
   cout << "\n";

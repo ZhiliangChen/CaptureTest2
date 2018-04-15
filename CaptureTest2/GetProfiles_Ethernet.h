@@ -26,7 +26,7 @@ public:
 	void OnError(const char* szErrorTxt, int iErrorValue);
 	void DisplayProfile(double* pdValueX, double* pdValueZ, unsigned int uiResolution);
 	void DisplayTimestamp(unsigned char* pucTimestamp);
-	std::string Double2Str(double dValue);
+	//std::string Double2Str(double dValue);
 
 #endif
 

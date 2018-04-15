@@ -48,6 +48,12 @@
     <ClInclude Include="InterfaceLLT_2.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="PortOperation.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="scanControlDataTypes.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CaptureTest2.cpp">
@@ -75,6 +81,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="GetProfiles_Ethernet.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="PortOperation.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
