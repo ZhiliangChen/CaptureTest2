@@ -92,11 +92,6 @@ void GetProfiles_Ethernet::DisplayProfile(double* pdValueX, double* pdValueZ, un
   double valuex[1280];
   double valuez[1280];
   int j = 0;
-<<<<<<< HEAD
-  
-=======
-
->>>>>>> 2c868206051648e6fdf40972dc14d8e16e9452de
   for(unsigned int i = 0; i < uiResolution; i++)
   {
 	 
