@@ -10,8 +10,8 @@
 //   01465 Dresden OT Langebrueck
 //   Germany
 //---------------------------------------------------------------------------
-
-class GetProGetProfiles_Ethernet
+//#include "InterfaceLLT_2.h"
+class GetProfiles_Ethernet
 {
 
 #ifndef LLTGetProfilesEthernetH
@@ -22,13 +22,27 @@ class GetProGetProfiles_Ethernet
 
 public:
 
-	void GetProfiles_Ethernet();
-	void OnError(const char* szErrorTxt, int iErrorValue);
+	void GetProfiles();
 	void DisplayProfile(double* pdValueX, double* pdValueZ, unsigned int uiResolution);
 	void DisplayTimestamp(unsigned char* pucTimestamp);
 	//std::string Double2Str(double dValue);
+	//CInterfaceLLT InterfaceLLT;
+
+	static int iRetValue;
+	static int num_valid;
+	static int num_right;
+	static int num_left;
+	static double gapwidth;
+	static double remakex[1280];
+	static double remakez[1280];
+	static int gapnum_right;
+	static int gapnum_left;
+	static double dShutterOpen;
+	static double dShutterClose;
+	static unsigned int uiProfileCount;
 
 #endif
 
 };
+
 

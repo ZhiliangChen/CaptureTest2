@@ -60,7 +60,8 @@ void CDllLoader::Reload(bool* pLoadError /*=NULL*/)
 void CDllLoader::Load(const char* Dll, bool* pLoadError /*=NULL*/)
 {
   //load the dll
-  m_hDLL= LoadLibrary(Dll);
+ CString Dll_cstring(Dll);
+  m_hDLL= LoadLibrary(Dll_cstring);
 
   //if the dll-load fails handle the error
   if( !m_hDLL && !pLoadError)
@@ -119,12 +120,13 @@ void CDllLoader::HandleFatalError(const char* Dll)
   //create the message text
   FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &lpMsgBuf, 0, NULL);
   //copy the error-message in a string
-  std::string Text( (LPCTSTR)lpMsgBuf);
+  //std::string Text( (LPCTSTR)lpMsgBuf);,此处修改了Text的定义
+  CString Text((LPCTSTR)lpMsgBuf);
   //free's the error-message-buffer
   LocalFree( lpMsgBuf);
   //add the dll-name to the error-string
   Text+= Dll;
   //exit the application with a error-messagebox
-  FatalAppExit( 0, Text.c_str());
+  FatalAppExit( 0, Text);
 }
 
