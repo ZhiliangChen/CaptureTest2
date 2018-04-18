@@ -13,7 +13,10 @@ void CvFindCenter::FindCenter()
 	storage = cvCreateMemStorage(0);
 	cvCvtColor(img, gray, CV_BGR2GRAY);
 	cvSmooth(gray, gray, CV_GAUSSIAN, 9, 9); // smooth it, otherwise a lot of false circles may be detected
-	circles = cvHoughCircles(gray, storage, CV_HOUGH_GRADIENT, 2, gray->height / 4, 200, 100, 5, 200);
+	/*cvHoughCircles(CvArr* image, void* circle_storage,int method, double dp, double min_dist,double param1 CV_DEFAULT(100),
+		double param2 CV_DEFAULT(100),int min_radius CV_DEFAULT(0),int max_radius CV_DEFAULT(0));*/
+	//检测接箍内圆，最大最小半径设置为325可以检测到；累加器阈值50会导致程序反应过慢，改成30有所缓解
+	circles = cvHoughCircles(gray, storage, CV_HOUGH_GRADIENT, 1, gray->height / 4, 200, 30, 324, 326);
 	//cv::seqToMat(seq, _circles);
 	int i;
 	for (i = 0; i < circles->total; i++)
