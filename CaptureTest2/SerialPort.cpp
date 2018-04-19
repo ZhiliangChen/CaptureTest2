@@ -984,7 +984,8 @@ void CSerialPort::QueryKey(HKEY hKey)
 						int nIndex = -1;
 						while(++nIndex < MaxSerialPortNum){
 							if (-1 == m_nComArray[nIndex]) {
-								m_nComArray[nIndex] = atoi((char*)(strDSName + 3));
+								//UNICODE±àÂëstrDSNameÖ¸ÕëÓÒÒÆ6Î»£¬ÈôÊÇASCII±àÂë£¬Ö¸ÕëÓÒÒÆ3Î»
+								m_nComArray[nIndex] = atoi((char*)(strDSName + 6));
 								break;
 							}
 						}

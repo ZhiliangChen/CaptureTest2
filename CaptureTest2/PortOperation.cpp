@@ -38,7 +38,6 @@ void PortOperation::HexStringFilter(CStringA &str)///十六进制过滤0-9 a-f A-F
 char PortOperation::CombineHexChar(char CharH, char CharL) ///十六进制转为字符  CombineHexChar(A,B) result=1011;
 {
 	char result;
-	CString temp;
 	if (CharH >= '0'&&CharH <= '9')			result = (CharH - '0');
 	else if (CharH >= 'a'&&CharH <= 'f')		result = (CharH - 'a' + 10);
 	else if (CharH >= 'A'&&CharH <= 'F')		result = (CharH - 'A' + 10);
