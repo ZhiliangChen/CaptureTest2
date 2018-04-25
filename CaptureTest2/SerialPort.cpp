@@ -977,7 +977,9 @@ void CSerialPort::QueryKey(HKEY hKey)
 			cchValue = MAX_VALUE_NAME;  achValue[0] = '\0'; 
 			if (ERROR_SUCCESS == RegEnumValue(hKey, i, achValue, &cchValue, NULL, NULL, NULL, NULL))  { 
 				CString szName(achValue);
-				if (-1 != szName.Find(_T("Serial")) || -1 != szName.Find(_T("VCom")) ){
+				//根据注册表的名称修改下面的字符串！这个函数仍然不支持COM口大于10
+				if (-1 != szName.Find(_T("Serial")) || -1 != szName.Find(_T("VCP")) ){
+				//if ( -1 != szName.Find(_T("VCP0"))) {
 					BYTE strDSName[10]; memset(strDSName, 0, 10);
 					DWORD nValueType = 0, nBuffLen = 10;
 					if (ERROR_SUCCESS == RegQueryValueEx(hKey, (LPCTSTR)achValue, NULL, &nValueType, strDSName, &nBuffLen)){

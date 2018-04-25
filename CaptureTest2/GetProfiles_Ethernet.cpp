@@ -128,6 +128,7 @@ void GetProfiles_Ethernet::DisplayProfile(double* pdValueX, double* pdValueZ, un
 				num_left++;
 			}
 			if ((gapwidth>-3.1) &&(gapwidth < -2.5))
+			//if (gapwidth < -2)
 			{
 				gapnum_right = num_valid - 1;
 				num_right++;
