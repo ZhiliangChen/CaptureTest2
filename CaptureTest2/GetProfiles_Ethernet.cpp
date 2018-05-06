@@ -26,7 +26,7 @@ extern CInterfaceLLT* m_pLLT;
 int GetProfiles_Ethernet::num_valid;
 int GetProfiles_Ethernet::num_right;
 int GetProfiles_Ethernet::num_left;
-double GetProfiles_Ethernet::gapwidth;
+double GetProfiles_Ethernet::m_gap;
 double GetProfiles_Ethernet::remakex[1280];
 double GetProfiles_Ethernet::remakez[1280];
 int GetProfiles_Ethernet::gapnum_right;
@@ -35,6 +35,8 @@ double GetProfiles_Ethernet::dShutterOpen;
 double GetProfiles_Ethernet::dShutterClose;
 unsigned int GetProfiles_Ethernet::uiProfileCount;
 
+double gapwidth;
+
 void GetProfiles_Ethernet::GetProfiles()
 {
 	
@@ -42,46 +44,65 @@ void GetProfiles_Ethernet::GetProfiles()
   std::vector<double> vdValueZ(m_uiResolution);
   // Resize the profile buffer to the maximal profile size
   std::vector<unsigned char> vucProfileBuffer(m_uiResolution * 4 + 16);
-  //Demonstrate the profile transfer via poll function
-  //Gets the type of the scanCONTROL (measurement range)
-  //Enable the measurement
-  if((iRetValue = m_pLLT->TransferProfiles(NORMAL_TRANSFER, true)) < GENERAL_FUNCTION_OK)
-  {
-    //OnError("Error during TransferProfiles", iRetValue);
-    return;
-  }
-  // Sleep for a while to warm up the transfer
-  Sleep(100);
+  int divisor_average = 20;
+  m_gap = 0;
+  //取10个紧密距数据取平均值
+  for (int m_average = 0; m_average < 20; m_average++) {
 
-  // Gets 1 profile in "polling-mode" and PURE_PROFILE configuration
-  if((iRetValue = m_pLLT->GetActualProfile(&vucProfileBuffer[0], (unsigned int)vucProfileBuffer.size(), PURE_PROFILE, NULL)) !=
-     vucProfileBuffer.size())
-  {
-   // OnError("Error during GetActualProfile", iRetValue);
-    return;
+
+	  //Demonstrate the profile transfer via poll function
+	  //Gets the type of the scanCONTROL (measurement range)
+	  //Enable the measurement
+	  if ((iRetValue = m_pLLT->TransferProfiles(NORMAL_TRANSFER, true)) < GENERAL_FUNCTION_OK)
+	  {
+		  //OnError("Error during TransferProfiles", iRetValue);
+		  return;
+	  }
+	  // Sleep for a while to warm up the transfer
+	  Sleep(100);
+
+	  // Gets 1 profile in "polling-mode" and PURE_PROFILE configuration
+	  if ((iRetValue = m_pLLT->GetActualProfile(&vucProfileBuffer[0], (unsigned int)vucProfileBuffer.size(), PURE_PROFILE, NULL)) !=
+		  vucProfileBuffer.size())
+	  {
+		  // OnError("Error during GetActualProfile", iRetValue);
+		  return;
+	  }
+	  //Get profile in polling-mode and PURE_PROFILE configuration OK 
+	 //Converting of profile data from the first reflection
+	  iRetValue = m_pLLT->ConvertProfile2Values(&vucProfileBuffer[0], m_uiResolution, PURE_PROFILE, m_tscanCONTROLType, 0, true, NULL,
+		  NULL, NULL, &vdValueX[0], &vdValueZ[0], NULL, NULL);
+
+	  if (((iRetValue & CONVERT_X) == 0) || ((iRetValue & CONVERT_Z) == 0))
+	  {
+		  //OnError("Error during Converting of profile data", iRetValue);
+		  return;
+	  }
+
+	  DisplayProfile(&vdValueX[0], &vdValueZ[0], m_uiResolution);
+	  if ((num_left == 0) || (num_right == 0))
+	  {
+		  divisor_average --;
+		  gapwidth = 0;
+	  }
+	  //为什么后面几次循环都是0？
+	  m_gap += gapwidth;
+	 
+	  //Sleep(100);
+
+	  //Disable the measurement
+	  if ((iRetValue = m_pLLT->TransferProfiles(NORMAL_TRANSFER, false)) < GENERAL_FUNCTION_OK)
+	  {
+		  //OnError("Error during TransferProfiles", iRetValue);
+		  return;
+	  }
   }
- //Get profile in polling-mode and PURE_PROFILE configuration OK 
-//Converting of profile data from the first reflection
-  iRetValue = m_pLLT->ConvertProfile2Values(&vucProfileBuffer[0], m_uiResolution, PURE_PROFILE, m_tscanCONTROLType, 0, true, NULL,
-                                            NULL, NULL, &vdValueX[0], &vdValueZ[0], NULL, NULL);
+  //计算最终的紧密距宽度
+	 m_gap = m_gap / divisor_average;
+	  //Display the timestamp from the profile
+	  DisplayTimestamp(&vucProfileBuffer[m_uiResolution * 4]);
   
-  if(((iRetValue & CONVERT_X) == 0) || ((iRetValue & CONVERT_Z) == 0))
-  {
-    //OnError("Error during Converting of profile data", iRetValue);
-    return;
-  }
-  
-  DisplayProfile(&vdValueX[0], &vdValueZ[0], m_uiResolution);
 
- //Display the timestamp from the profile
-  DisplayTimestamp(&vucProfileBuffer[m_uiResolution * 4]);
-
-  //Disable the measurement
-  if((iRetValue = m_pLLT->TransferProfiles(NORMAL_TRANSFER, false)) < GENERAL_FUNCTION_OK)
-  {
-    //OnError("Error during TransferProfiles", iRetValue);
-    return;
-  }
 }
 
 
@@ -92,6 +113,11 @@ void GetProfiles_Ethernet::DisplayProfile(double* pdValueX, double* pdValueZ, un
   double valuex[1280];
   double valuez[1280];
   int j = 0;
+  num_left = num_right = 0;
+  num_valid = 0;
+  memset(remakex, 0, 1280);
+  memset(remakez, 0, 1280);
+  gapnum_right = gapnum_left = 0;
   for(unsigned int i = 0; i < uiResolution; i++)
   {
 	 
@@ -100,20 +126,6 @@ void GetProfiles_Ethernet::DisplayProfile(double* pdValueX, double* pdValueZ, un
 	  valuex[i] = *pdValueX++;
 	  valuez[i] = *pdValueZ++;
 
-    //cout << "\r" << "Profiledata: X = " << valuex[i];
-
-    //for(; tNumberSize < 8; tNumberSize++)
-    //{
-    //  cout << " ";
-    //}
-   // tNumberSize = Double2Str(*pdValueZ).size();
-
-   // cout << " Z = " << valuez[i];
-
-    //for(; tNumberSize < 8; tNumberSize++)
-    //{
-    //  cout << " ";
-    //}
 	
 	if (valuez[i] != 0)
 	{
@@ -122,12 +134,13 @@ void GetProfiles_Ethernet::DisplayProfile(double* pdValueX, double* pdValueZ, un
 		if (j > 0)
 		{
 			gapwidth = remakez[j] - remakez[j - 1];
-			if (gapwidth >7)
+			//接箍外径到凹陷内是9mm，有些点可能在接箍上表面反射回去，因此取最小值4mm用来判断
+			if ((gapwidth >5) && (gapwidth < 10))
 			{
 				gapnum_left = num_valid;
 				num_left++;
 			}
-			if ((gapwidth>-3.1) &&(gapwidth < -2.5))
+			if ((gapwidth>-2.8) &&(gapwidth < -2.6))
 			//if (gapwidth < -2)
 			{
 				gapnum_right = num_valid - 1;
@@ -139,8 +152,9 @@ void GetProfiles_Ethernet::DisplayProfile(double* pdValueX, double* pdValueZ, un
 	}
   }
   gapwidth = remakex[gapnum_right] - remakex[gapnum_left];
-
-
+  //万一有效点取不到1280个程序会不会有问题？为什么不能连续点击？
+  
+  //memset
 }
 
 // Displays the timestamp

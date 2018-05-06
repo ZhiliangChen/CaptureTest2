@@ -32,7 +32,7 @@ public:
 	static int num_valid;
 	static int num_right;
 	static int num_left;
-	static double gapwidth;
+	static double m_gap;
 	static double remakex[1280];
 	static double remakez[1280];
 	static int gapnum_right;
