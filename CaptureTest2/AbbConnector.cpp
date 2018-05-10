@@ -335,7 +335,7 @@ bool AbbConnector::MoveReady(){
 		{	
 			flag = FALSE;
 		}
-		Sleep(2000);
+		Sleep(3000);
 
 	}
 	//delete[] recvbuf;
