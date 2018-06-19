@@ -303,6 +303,7 @@ bool AbbConnector::Disconnect()
 		return FALSE;
 }
 
+//moveready可以解决前后move指令冲突的问题
 bool AbbConnector::MoveReady(){
 	char recvbuf[100]="";
 	//char* ptr;
@@ -335,7 +336,7 @@ bool AbbConnector::MoveReady(){
 		{	
 			flag = FALSE;
 		}
-		Sleep(3000);
+		Sleep(500);
 
 	}
 	//delete[] recvbuf;
